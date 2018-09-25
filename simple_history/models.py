@@ -245,11 +245,17 @@ class HistoricalRecords(object):
                 attrs.update(values)
             return model(**attrs)
 
+
+        # put the actual manager in scope for the propertie below
+        # to be able to work with a custom name
+        manager_name= self.manager_name
+        
+        
         def get_next_record(self):
             """
             Get the next history record for the instance. `None` if last.
             """
-            return self.instance.history.filter(
+            return getattr(self.instance, manager_name).filter(
                 Q(history_date__gt=self.history_date)
             ).order_by('history_date').first()
 
@@ -257,7 +263,8 @@ class HistoricalRecords(object):
             """
             Get the previous history record for the instance. `None` if first.
             """
-            return self.instance.history.filter(
+            
+            return getattr(self.instance, manager_name).filter(
                 Q(history_date__lt=self.history_date)
             ).order_by('history_date').last()
 
