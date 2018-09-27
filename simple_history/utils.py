@@ -6,7 +6,7 @@ from simple_history.exceptions import NotHistoricalModelError
 def update_change_reason(instance, reason):
     attrs = {}
     model = type(instance)
-    manager = instance if instance.id is not None else model
+    managed = instance if instance.id is not None else model
     for field in instance._meta.fields:
         value = getattr(instance, field.attname)
         if field.primary_key is True:
@@ -14,7 +14,8 @@ def update_change_reason(instance, reason):
                 attrs[field.attname] = value
         else:
             attrs[field.attname] = value
-    record = manager.history.filter(**attrs).order_by('-history_date').first()
+    manager_name = model._meta.simple_history_manager_attribute
+    record = getattr(managed, manager_name).filter(**attrs).order_by('-history_date').first()
     record.history_change_reason = reason
     record.save()
 
